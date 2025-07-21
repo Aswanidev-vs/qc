@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	q "github.com/Aswanidev-vs/quickcalc/qc"
+	q "github.com/Aswanidev-vs/qc/quickcalc"
 )
 
 func main() {
