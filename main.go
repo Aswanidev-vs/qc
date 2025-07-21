@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	q "github.com/Aswanidev-vs/qc/quickcalc"
+	q "github.com/Aswanidev-vs/quickcalc/qc"
 )
 
 func main() {
@@ -48,6 +48,7 @@ func main() {
 func read(p, q int) (int, int) {
 	fmt.Print("enter 2 number:")
 	fmt.Scan(&p)
+
 	fmt.Scan(&q)
 	return p, q
 }
