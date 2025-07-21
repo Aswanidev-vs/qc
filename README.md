@@ -34,10 +34,12 @@ package main
 
 import (
 	"fmt"
+
 	q "github.com/Aswanidev-vs/qc/quickcalc"
 )
 
 func main() {
+
 	fmt.Println("testing the my math package")
 	var a, b, c, d, e, f, n int
 	a, b = read(a, b)
@@ -53,11 +55,12 @@ func main() {
 	g := float64(e)
 	h := float64(f)
 	div := q.Div(g, h)
-	if h == 0 {
+	if g/h == 0 {
 		fmt.Println(e, " cannot be divided by Zero!")
 	} else {
 		fmt.Println("div is :", div)
 	}
+
 	fmt.Println("enter number to perform prime:")
 	fmt.Scan(&n)
 	prime := q.Prime(n)
@@ -67,18 +70,20 @@ func main() {
 	var fact int
 	fmt.Println("Enter number to perform factorial:")
 	fmt.Scan(&fact)
+
 	factor := q.Fact(fact)
 	if factor != 0 {
 		fmt.Println("Factorial is:", factor)
 	}
-}
 
+}
 func read(p, q int) (int, int) {
 	fmt.Print("enter 2 number:")
 	fmt.Scan(&p)
 	fmt.Scan(&q)
 	return p, q
 }
+
 ```
 
 
