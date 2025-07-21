@@ -22,7 +22,7 @@ go mod tidy
 Import the package in your Go code:
 
 ```go
-go get -u github.com/Aswanidev-vs/quickcalc
+github.com/Aswanidev-vs/qc/quickcalc
 ```
 
 ## Example
