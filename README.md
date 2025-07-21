@@ -1,6 +1,6 @@
 # quickcalc
 A simple Go package providing basic arithmetic operations and utility functions like prime checking and factorial calculation.
-[![Go Reference](https://pkg.go.dev/badge/github.com/Aswanidev-vs/qc.git.svg)](https://pkg.go.dev/github.com/Aswanidev-vs/qc.git)
+<a href="https://pkg.go.dev/github.com/Aswanidev-vs/qc.git"><img src="https://pkg.go.dev/badge/github.com/Aswanidev-vs/qc.git.svg" alt="Go Reference"></a>
 ## Features
 
 - Addition, Subtraction, Multiplication, Division
