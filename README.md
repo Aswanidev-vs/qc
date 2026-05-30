@@ -14,6 +14,10 @@ go get github.com/Aswanidev-vs/quickcalc/qc
 
 Mathematical constants: `Pi`, `E`, `Phi`, `Sqrt2`, `SqrtPi`, `Ln2`, `Ln10`, `Log2E`, `Log10E`, `DegPerRad`, `RadPerDeg`.
 
+### Numerics tolerances (internal, `numerics.go`)
+
+Numerical stability helpers (package-level epsilons) used across algorithms to make floating-point comparisons consistent and predictable.
+
 ### Arithmetic (`arithmetic.go`)
 
 Basic operations with error handling for edge cases (division by zero, overflow).
@@ -132,6 +136,13 @@ Primes, factorization, divisibility, and digit operations.
 | `Slope`, `LineEquation`, `PointLineDistance` | Line operations |
 | `CircleFromThreePoints` | Circumscribed circle |
 
+### Linear Algebra (Matrix + Vectors + `linear_algebra.go`)
+
+The library provides:
+- 2D matrix operations (`matrix.go`)
+- 2D/3D vector operations (`vectors.go`)
+- Additional linear algebra utilities (`linear_algebra.go`): norms, Gram-Schmidt orthonormalization, and least-squares solving.
+
 ### Matrix (`matrix.go`)
 
 2D matrix operations with full linear algebra support.
@@ -167,6 +178,15 @@ Primes, factorization, divisibility, and digit operations.
 | `Distance` | Distance between tips |
 | `LerpVec2`, `LerpVec3` | Vector interpolation |
 | `TripleScalar` (Vec3) | Scalar triple product |
+
+### Additional Linear Algebra (`linear_algebra.go`)
+
+| Function | Description |
+|----------|-------------|
+| `NormL1Vec2`, `NormLinfVec2`, `NormL2Vec2` | L1/L∞/L2 norms for `Vec2` |
+| `NormL1Vec3`, `NormLinfVec3`, `NormL2Vec3` | L1/L∞/L2 norms for `Vec3` |
+| `GramSchmidtOrthonormalizeVec3(a,b,c)` | Orthonormal basis from 3 vectors |
+| `LeastSquaresSolve(A, b)` | Least-squares solution for overdetermined systems (`Ax ≈ b`) |
 
 ### Probability (`probability.go`)
 
@@ -222,7 +242,104 @@ Unit conversions, number bases, coordinate systems, and complex numbers.
 | **Special** | `Erf`, `Erfc`, `Gamma`, `LogGamma` |
 | **Rounding** | `Round`, `Floor`, `Ceil`, `Trunc`, `RoundTo`, `ToFixed` |
 
+## How to use (quick examples)
+
+Import the library as `qc`:
+```go
+import qc "github.com/Aswanidev-vs/quickcalc/qc"
+```
+
+### 1) Constants
+```go
+pi := qc.Pi
+e := qc.E
+```
+
+### 2) Arithmetic
+```go
+sum := qc.Add(10, 20)
+quot, _ := qc.Div(10, 3)
+gcd := qc.GCD(48, 18)
+```
+
+### 3) Algebra
+```go
+x1, x2, _ := qc.SolveQuadratic(1, -5, 6) // x^2 - 5x + 6 = 0
+fib, _ := qc.Fibonacci(10)
+```
+
+### 4) Trigonometry (radians + degrees)
+```go
+y := qc.Sin(qc.Pi / 6)
+yDeg := qc.SinD(30) // degrees
+```
+
+### 5) Statistics
+```go
+mean, _ := qc.Mean([]float64{1, 2, 3})
+std, _ := qc.StdDev([]float64{1, 2, 3})
+```
+
+### 6) Number theory
+```go
+isPrime := qc.IsPrime(97)
+factors, _ := qc.PrimeFactors(360)
+```
+
+### 7) Geometry
+```go
+c := qc.Circle{Radius: 5}
+area := c.Area()
+```
+
+### 8) Matrix
+```go
+m, _ := qc.NewMatrixFromSlice([][]float64{{1, 2}, {3, 4}})
+det, _ := m.Determinant()
+inv, _ := m.Inverse()
+```
+
+### 9) Vectors (Vec2 / Vec3)
+```go
+v := qc.Vec3{X: 1, Y: 2, Z: 3}
+n := v.Magnitude()
+u, _ := v.Normalize()
+```
+
+### 10) Additional linear algebra (`linear_algebra.go`)
+```go
+v2 := qc.Vec2{X: -3, Y: 4}
+l2 := qc.NormL2Vec2(v2)
+
+a := qc.Vec3{1, 0, 0}
+b := qc.Vec3{0, 1, 0}
+c := qc.Vec3{0, 0, 1}
+basis, _ := qc.GramSchmidtOrthonormalizeVec3(a, b, c)
+
+A, _ := qc.NewMatrixFromSlice([][]float64{{1}, {2}, {3}})
+x, _ := qc.LeastSquaresSolve(A, []float64{1, 2, 3})
+```
+
+### 11) Probability
+```go
+p, _ := qc.NormalPDF(0, 0, 1)
+cdf, _ := qc.NormalCDF(0, 0, 1)
+```
+
+### 12) Calculus
+```go
+f := func(x float64) float64 { return x * x }
+d := qc.Derivative(f, 3, 1e-8)
+```
+
+### 13) Conversions
+```go
+rad := qc.DegreesToRadians(180)
+deg := qc.RadiansToDegrees(qc.Pi)
+```
+
 ## Example Usage
+u, _ := v.Normalize()
 
 ```go
 package main
@@ -271,28 +388,11 @@ func main() {
 ## Testing
 
 ```sh
-go test ./qc/ -v
+go test ./... -v
 ```
 
-## Project Structure
-
-```
-quickcalc/
-├── main.go              # Demo application
-├── go.mod
-├── README.md
-└── qc/                  # Library package
-    ├── constants.go     # Mathematical constants
-    ├── arithmetic.go    # Basic operations
-    ├── algebra.go       # Polynomials, GCD, sequences
-    ├── trigonometry.go  # Trig and inverse trig
-    ├── statistics.go    # Descriptive statistics
-    ├── number_theory.go # Primes, factorization
-    ├── geometry.go      # Shapes and coordinate geometry
-    ├── matrix.go        # Matrix operations
-    ├── vectors.go       # 2D/3D vector algebra
-    ├── probability.go   # Distributions and combinatorics
-    ├── calculus.go      # Numerical calculus
-    ├── conversions.go   # Units, bases, complex numbers
-    └── *_test.go        # Comprehensive tests
+Optional hardening commands:
+```sh
+go vet ./...
+go test ./... -race
 ```
