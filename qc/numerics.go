@@ -24,4 +24,3 @@ const (
 	// approximating derivatives.
 	DefaultNewtonStep = 1e-10
 )
-

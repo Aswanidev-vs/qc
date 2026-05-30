@@ -36,7 +36,10 @@ func TestTemperatureConversions(t *testing.T) {
 }
 
 func TestDecimalToBinary(t *testing.T) {
-	tests := []struct{ n int; want string }{
+	tests := []struct {
+		n    int
+		want string
+	}{
 		{0, "0"}, {1, "1"}, {5, "101"}, {42, "101010"}, {-7, "-111"},
 	}
 	for _, tt := range tests {
