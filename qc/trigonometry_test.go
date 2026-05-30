@@ -7,7 +7,7 @@ import (
 
 func TestSinCosTan(t *testing.T) {
 	tests := []struct {
-		x       float64
+		x        float64
 		sin, cos float64
 	}{
 		{0, 0, 1},
@@ -79,7 +79,7 @@ func TestSinDCosD(t *testing.T) {
 }
 
 func TestWrapAngle(t *testing.T) {
-	tests := []struct{ in, want float64}{
+	tests := []struct{ in, want float64 }{
 		{0, 0},
 		{Pi, Pi},
 		{-Pi, -Pi},
