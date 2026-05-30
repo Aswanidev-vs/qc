@@ -2,9 +2,6 @@ package qc
 
 import "errors"
 
-// Numerical helpers/tolerances
-// (in numerics.go)
-
 // Matrix sentinel errors (exported for stable API usage).
 var (
 	// ErrMatrixNotSquare is returned when an operation requires a square matrix.
@@ -180,6 +177,7 @@ func (m Matrix) Determinant() (float64, error) {
 	if m.Rows() != m.Cols() {
 		return 0, ErrMatrixNotSquare
 	}
+
 	n := m.Rows()
 	if n == 1 {
 		return m[0][0], nil
@@ -187,42 +185,49 @@ func (m Matrix) Determinant() (float64, error) {
 	if n == 2 {
 		return m[0][0]*m[1][1] - m[0][1]*m[1][0], nil
 	}
-	// LU decomposition via cofactor expansion
-	det := 0.0
-	for j := 0; j < n; j++ {
-		minor, _ := m.minor(0, j)
-		minorDet, _ := minor.Determinant()
-		sign := 1.0
-		if j%2 == 1 {
-			sign = -1.0
+
+	// Gaussian elimination with partial pivoting (O(n^3))
+	a := make(Matrix, n)
+	for i := range a {
+		a[i] = make([]float64, n)
+		copy(a[i], m[i])
+	}
+
+	detSign := 1.0
+	for i := 0; i < n; i++ {
+		pivotRow := i
+		maxVal := abs(a[i][i])
+		for r := i + 1; r < n; r++ {
+			if abs(a[r][i]) > maxVal {
+				maxVal = abs(a[r][i])
+				pivotRow = r
+			}
 		}
-		det += sign * m[0][j] * minorDet
+
+		if maxVal < EpsSingular {
+			return 0, nil
+		}
+
+		if pivotRow != i {
+			a[i], a[pivotRow] = a[pivotRow], a[i]
+			detSign = -detSign
+		}
+
+		pivot := a[i][i]
+		for r := i + 1; r < n; r++ {
+			factor := a[r][i] / pivot
+			for c := i + 1; c < n; c++ {
+				a[r][c] -= factor * a[i][c]
+			}
+			a[r][i] = 0
+		}
+	}
+
+	det := detSign
+	for i := 0; i < n; i++ {
+		det *= a[i][i]
 	}
 	return det, nil
-}
-
-// minor returns the minor matrix obtained by removing row r and column c.
-func (m Matrix) minor(r, c int) (Matrix, error) {
-	if r < 0 || r >= m.Rows() || c < 0 || c >= m.Cols() {
-		return nil, ErrInvalidInput
-	}
-	result, _ := NewMatrix(m.Rows()-1, m.Cols()-1)
-	ri := 0
-	for i := 0; i < m.Rows(); i++ {
-		if i == r {
-			continue
-		}
-		ci := 0
-		for j := 0; j < m.Cols(); j++ {
-			if j == c {
-				continue
-			}
-			result[ri][ci] = m[i][j]
-			ci++
-		}
-		ri++
-	}
-	return result, nil
 }
 
 // Trace returns the trace (sum of diagonal elements) of a square matrix.
@@ -243,6 +248,7 @@ func (m Matrix) Inverse() (Matrix, error) {
 		return nil, ErrMatrixNotSquare
 	}
 	n := m.Rows()
+
 	// Create augmented matrix [m | I]
 	aug, _ := NewMatrix(n, 2*n)
 	for i := 0; i < n; i++ {
@@ -251,9 +257,9 @@ func (m Matrix) Inverse() (Matrix, error) {
 		}
 		aug[i][n+i] = 1
 	}
-	// Forward elimination
+
+	// Gauss-Jordan elimination
 	for i := 0; i < n; i++ {
-		// Find pivot
 		maxVal := aug[i][i]
 		maxRow := i
 		for k := i + 1; k < n; k++ {
@@ -266,12 +272,12 @@ func (m Matrix) Inverse() (Matrix, error) {
 			return nil, ErrMatrixSingular
 		}
 		aug[i], aug[maxRow] = aug[maxRow], aug[i]
-		// Scale pivot row
+
 		pivot := aug[i][i]
 		for j := 0; j < 2*n; j++ {
 			aug[i][j] /= pivot
 		}
-		// Eliminate column
+
 		for k := 0; k < n; k++ {
 			if k == i {
 				continue
@@ -282,6 +288,7 @@ func (m Matrix) Inverse() (Matrix, error) {
 			}
 		}
 	}
+
 	// Extract inverse
 	inv, _ := NewMatrix(n, n)
 	for i := 0; i < n; i++ {
@@ -297,15 +304,16 @@ func (m Matrix) Rank() (int, error) {
 	if m.Rows() == 0 || m.Cols() == 0 {
 		return 0, ErrEmptySlice
 	}
-	// Copy the matrix
+
+	// Copy matrix
 	a := make(Matrix, m.Rows())
 	for i := range m {
 		a[i] = make([]float64, m.Cols())
 		copy(a[i], m[i])
 	}
+
 	rank := 0
 	for col := 0; col < m.Cols(); col++ {
-		// Find pivot
 		pivotRow := -1
 		for row := rank; row < m.Rows(); row++ {
 			if abs(a[row][col]) > Eps {
@@ -316,11 +324,14 @@ func (m Matrix) Rank() (int, error) {
 		if pivotRow == -1 {
 			continue
 		}
+
 		a[rank], a[pivotRow] = a[pivotRow], a[rank]
 		pivot := a[rank][col]
+
 		for j := 0; j < m.Cols(); j++ {
 			a[rank][j] /= pivot
 		}
+
 		for i := 0; i < m.Rows(); i++ {
 			if i == rank {
 				continue
