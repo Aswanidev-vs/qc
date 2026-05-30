@@ -2,6 +2,31 @@ package qc
 
 import "errors"
 
+// Numerical helpers/tolerances
+// (in numerics.go)
+
+// Matrix sentinel errors (exported for stable API usage).
+var (
+	// ErrMatrixNotSquare is returned when an operation requires a square matrix.
+	ErrMatrixNotSquare = errors.New("matrix must be square")
+
+	// ErrMatrixDimMismatch is returned when matrix dimensions are incompatible
+	// for an operation (e.g., addition or multiplication).
+	ErrMatrixDimMismatch = errors.New("matrices must have the same dimensions")
+
+	// ErrMatrixSingular is returned when an operation requires an invertible
+	// (non-singular) matrix.
+	ErrMatrixSingular = errors.New("matrix is singular (not invertible)")
+
+	// ErrMatrixRowLengthMismatch is returned when a 2D slice has rows of
+	// different lengths.
+	ErrMatrixRowLengthMismatch = errors.New("all rows must have the same number of columns")
+
+	// ErrMatrixIncompatibleMul is returned when matrix multiplication dimensions
+	// are incompatible.
+	ErrMatrixIncompatibleMul = errors.New("incompatible dimensions for multiplication")
+)
+
 // Matrix is a 2D slice of float64 values.
 type Matrix [][]float64
 
@@ -29,7 +54,7 @@ func NewMatrixFromSlice(data [][]float64) (Matrix, error) {
 	}
 	for _, row := range data {
 		if len(row) != cols {
-			return nil, errors.New("all rows must have the same number of columns")
+			return nil, ErrMatrixRowLengthMismatch
 		}
 	}
 	m := make(Matrix, len(data))
@@ -85,7 +110,7 @@ func (m Matrix) Set(row, col int, val float64) error {
 // Add adds two matrices element-wise.
 func (m Matrix) Add(other Matrix) (Matrix, error) {
 	if m.Rows() != other.Rows() || m.Cols() != other.Cols() {
-		return nil, errors.New("matrices must have the same dimensions")
+		return nil, ErrMatrixDimMismatch
 	}
 	result, _ := NewMatrix(m.Rows(), m.Cols())
 	for i := 0; i < m.Rows(); i++ {
@@ -99,7 +124,7 @@ func (m Matrix) Add(other Matrix) (Matrix, error) {
 // Sub subtracts another matrix element-wise.
 func (m Matrix) Sub(other Matrix) (Matrix, error) {
 	if m.Rows() != other.Rows() || m.Cols() != other.Cols() {
-		return nil, errors.New("matrices must have the same dimensions")
+		return nil, ErrMatrixDimMismatch
 	}
 	result, _ := NewMatrix(m.Rows(), m.Cols())
 	for i := 0; i < m.Rows(); i++ {
@@ -124,7 +149,7 @@ func (m Matrix) ScalarMul(scalar float64) Matrix {
 // Mul multiplies two matrices.
 func (m Matrix) Mul(other Matrix) (Matrix, error) {
 	if m.Cols() != other.Rows() {
-		return nil, errors.New("incompatible dimensions for multiplication")
+		return nil, ErrMatrixIncompatibleMul
 	}
 	result, _ := NewMatrix(m.Rows(), other.Cols())
 	for i := 0; i < m.Rows(); i++ {
@@ -153,7 +178,7 @@ func (m Matrix) Transpose() Matrix {
 // Determinant returns the determinant of a square matrix.
 func (m Matrix) Determinant() (float64, error) {
 	if m.Rows() != m.Cols() {
-		return 0, errors.New("matrix must be square")
+		return 0, ErrMatrixNotSquare
 	}
 	n := m.Rows()
 	if n == 1 {
@@ -203,7 +228,7 @@ func (m Matrix) minor(r, c int) (Matrix, error) {
 // Trace returns the trace (sum of diagonal elements) of a square matrix.
 func (m Matrix) Trace() (float64, error) {
 	if m.Rows() != m.Cols() {
-		return 0, errors.New("matrix must be square")
+		return 0, ErrMatrixNotSquare
 	}
 	trace := 0.0
 	for i := 0; i < m.Rows(); i++ {
@@ -215,7 +240,7 @@ func (m Matrix) Trace() (float64, error) {
 // Inverse returns the inverse of a square matrix using Gauss-Jordan elimination.
 func (m Matrix) Inverse() (Matrix, error) {
 	if m.Rows() != m.Cols() {
-		return nil, errors.New("matrix must be square")
+		return nil, ErrMatrixNotSquare
 	}
 	n := m.Rows()
 	// Create augmented matrix [m | I]
@@ -237,8 +262,8 @@ func (m Matrix) Inverse() (Matrix, error) {
 				maxRow = k
 			}
 		}
-		if abs(maxVal) < 1e-12 {
-			return nil, errors.New("matrix is singular (not invertible)")
+		if abs(maxVal) < EpsSingular {
+			return nil, ErrMatrixSingular
 		}
 		aug[i], aug[maxRow] = aug[maxRow], aug[i]
 		// Scale pivot row
@@ -283,7 +308,7 @@ func (m Matrix) Rank() (int, error) {
 		// Find pivot
 		pivotRow := -1
 		for row := rank; row < m.Rows(); row++ {
-			if abs(a[row][col]) > 1e-12 {
+			if abs(a[row][col]) > Eps {
 				pivotRow = row
 				break
 			}
@@ -322,7 +347,7 @@ func (m Matrix) IsDiagonal() bool {
 	}
 	for i := 0; i < m.Rows(); i++ {
 		for j := 0; j < m.Cols(); j++ {
-			if i != j && abs(m[i][j]) > 1e-12 {
+			if i != j && abs(m[i][j]) > Eps {
 				return false
 			}
 		}
@@ -337,7 +362,7 @@ func (m Matrix) IsSymmetric() bool {
 	}
 	for i := 0; i < m.Rows(); i++ {
 		for j := i + 1; j < m.Cols(); j++ {
-			if abs(m[i][j]-m[j][i]) > 1e-12 {
+			if abs(m[i][j]-m[j][i]) > Eps {
 				return false
 			}
 		}
